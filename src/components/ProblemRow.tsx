@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
+import { DifficultyBadge } from '@/components/DifficultyBadge';
 
 interface ProblemRowProps {
   problem: Problem;
@@ -43,17 +44,18 @@ export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
   return (
     <div 
       className={cn(
-        "group grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto] gap-4 items-center px-4 py-3 rounded-lg transition-all duration-200",
+        "group grid grid-cols-[50px_1fr_80px_50px_50px_50px_36px] gap-3 items-center px-4 py-3 rounded-lg transition-all duration-200",
         "hover:bg-secondary/50 border border-transparent",
         completionStatus === 'complete' && "bg-success/5 border-success/20",
         completionStatus === 'partial' && "bg-warning/5 border-warning/20",
       )}
       style={{ animationDelay: `${index * 20}ms` }}
     >
-      {/* ID & Problem Name */}
-      <span className="font-mono text-xs text-muted-foreground w-10">{problem.id}</span>
+      {/* ID */}
+      <span className="font-mono text-xs text-muted-foreground">{problem.id}</span>
       
-      <div className="flex flex-col gap-1 min-w-0">
+      {/* Problem Name & Details */}
+      <div className="flex flex-col gap-1.5 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-medium text-sm text-foreground truncate">{problem.problem}</span>
           {lcUrl && (
@@ -61,20 +63,21 @@ export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
               href={lcUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
+              className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary flex-shrink-0"
             >
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0", topicColors[problem.topic])}>
             {problem.topic}
           </Badge>
           <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-secondary/50 text-muted-foreground border-border">
             {problem.pattern}
           </Badge>
-          <span className="text-[10px] text-muted-foreground">{problem.skill}</span>
+          <DifficultyBadge pattern={problem.pattern} skill={problem.skill} />
+          <span className="text-[10px] text-muted-foreground hidden sm:inline">{problem.skill}</span>
         </div>
 
         {/* Notes Input */}
@@ -83,20 +86,20 @@ export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
             value={problem.notes}
             onChange={(e) => onUpdate(problem.id, { notes: e.target.value })}
             placeholder="Add notes..."
-            className="mt-2 h-7 text-xs bg-background/50"
+            className="mt-1 h-7 text-xs bg-background/50"
           />
         )}
       </div>
 
       {/* LeetCode Link */}
-      <Badge variant="secondary" className="font-mono text-[10px] px-2 py-0.5 bg-muted/50">
+      <Badge variant="secondary" className="font-mono text-[10px] px-2 py-0.5 bg-muted/50 justify-center">
         {problem.lc}
       </Badge>
 
-      {/* Checkboxes */}
+      {/* Checkboxes - centered properly */}
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center w-full">
             <Checkbox
               checked={problem.solved}
               onCheckedChange={(checked) => onUpdate(problem.id, { solved: !!checked })}
@@ -114,7 +117,7 @@ export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center w-full">
             <Checkbox
               checked={problem.resolved}
               onCheckedChange={(checked) => onUpdate(problem.id, { resolved: !!checked })}
@@ -132,7 +135,7 @@ export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center w-full">
             <Checkbox
               checked={problem.explained}
               onCheckedChange={(checked) => onUpdate(problem.id, { explained: !!checked })}
@@ -151,7 +154,7 @@ export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
       <button
         onClick={() => setShowNotes(!showNotes)}
         className={cn(
-          "p-1.5 rounded-md transition-colors",
+          "p-1.5 rounded-md transition-colors flex items-center justify-center",
           showNotes ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"
         )}
       >

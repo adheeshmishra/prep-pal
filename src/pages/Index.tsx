@@ -1,20 +1,48 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useProblems } from '@/hooks/useProblems';
 import { ProblemRow } from '@/components/ProblemRow';
 import { StatsCard } from '@/components/StatsCard';
 import { FilterBar, Filters } from '@/components/FilterBar';
 import { AddProblemDialog } from '@/components/AddProblemDialog';
-import { CheckCircle2, RotateCcw, Lightbulb, Target, Code2 } from 'lucide-react';
+import { ExecutionOrderDialog } from '@/components/ExecutionOrderDialog';
+import { WeekIndicator } from '@/components/WeekIndicator';
+import { ProgressExport } from '@/components/ProgressExport';
+import { CheckCircle2, RotateCcw, Lightbulb, Target, Code2, Keyboard } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { toast } from 'sonner';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const Index = () => {
-  const { problems, updateProblem, addProblem } = useProblems();
+  const { problems, updateProblem, addProblem, resetProgress } = useProblems();
   const [filters, setFilters] = useState<Filters>({
     search: '',
     topic: 'all',
     pattern: 'all',
     status: 'all',
   });
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + K for search focus
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[placeholder="Search problems..."]') as HTMLInputElement;
+        searchInput?.focus();
+      }
+      // Escape to clear filters
+      if (e.key === 'Escape') {
+        setFilters({ search: '', topic: 'all', pattern: 'all', status: 'all' });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -64,12 +92,32 @@ const Index = () => {
                 <p className="text-xs text-muted-foreground">FAANG Interview Prep</p>
               </div>
             </div>
-            <AddProblemDialog onAdd={addProblem} />
+            <div className="flex items-center gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded bg-secondary/50 text-[10px] text-muted-foreground">
+                    <Keyboard className="w-3 h-3" />
+                    <span>⌘K search</span>
+                    <span className="mx-1">•</span>
+                    <span>Esc clear</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Keyboard shortcuts</p>
+                </TooltipContent>
+              </Tooltip>
+              <ExecutionOrderDialog problems={problems} />
+              <ProgressExport problems={problems} onReset={resetProgress} />
+              <AddProblemDialog onAdd={addProblem} />
+            </div>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* Week Indicator */}
+        <WeekIndicator problems={problems} />
+
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatsCard
@@ -111,19 +159,19 @@ const Index = () => {
 
         {/* Problems List */}
         <div className="bg-card rounded-xl border border-border overflow-hidden">
-          {/* Table Header */}
-          <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto] gap-4 items-center px-4 py-3 bg-secondary/30 border-b border-border text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            <span className="w-10">ID</span>
+          {/* Table Header - aligned with row grid */}
+          <div className="grid grid-cols-[50px_1fr_80px_50px_50px_50px_36px] gap-3 items-center px-4 py-3 bg-secondary/30 border-b border-border text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <span>ID</span>
             <span>Problem</span>
-            <span>LC</span>
+            <span className="text-center">LC</span>
             <span className="text-center">Solved</span>
             <span className="text-center">Re-solve</span>
             <span className="text-center">Explain</span>
-            <span className="w-8"></span>
+            <span></span>
           </div>
 
           {/* Problems */}
-          <ScrollArea className="h-[calc(100vh-380px)]">
+          <ScrollArea className="h-[calc(100vh-440px)] min-h-[400px]">
             <div className="divide-y divide-border/50">
               {filteredProblems.length > 0 ? (
                 filteredProblems.map((problem, index) => (
@@ -145,10 +193,13 @@ const Index = () => {
           </ScrollArea>
 
           {/* Footer */}
-          <div className="px-4 py-3 bg-secondary/30 border-t border-border">
+          <div className="px-4 py-3 bg-secondary/30 border-t border-border flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
               Showing <span className="font-medium text-foreground">{filteredProblems.length}</span> of{' '}
               <span className="font-medium text-foreground">{problems.length}</span> problems
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Mastery: <span className="font-medium text-foreground">{Math.round((stats.mastered / stats.total) * 100)}%</span>
             </p>
           </div>
         </div>
