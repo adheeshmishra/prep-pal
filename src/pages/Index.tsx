@@ -1,12 +1,158 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useMemo } from 'react';
+import { useProblems } from '@/hooks/useProblems';
+import { ProblemRow } from '@/components/ProblemRow';
+import { StatsCard } from '@/components/StatsCard';
+import { FilterBar, Filters } from '@/components/FilterBar';
+import { AddProblemDialog } from '@/components/AddProblemDialog';
+import { CheckCircle2, RotateCcw, Lightbulb, Target, Code2 } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const Index = () => {
+  const { problems, updateProblem, addProblem } = useProblems();
+  const [filters, setFilters] = useState<Filters>({
+    search: '',
+    topic: 'all',
+    pattern: 'all',
+    status: 'all',
+  });
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    const solved = problems.filter(p => p.solved).length;
+    const resolved = problems.filter(p => p.resolved).length;
+    const explained = problems.filter(p => p.explained).length;
+    const mastered = problems.filter(p => p.solved && p.resolved && p.explained).length;
+    return { solved, resolved, explained, mastered, total: problems.length };
+  }, [problems]);
+
+  // Filter problems
+  const filteredProblems = useMemo(() => {
+    return problems.filter(p => {
+      const matchesSearch = !filters.search || 
+        p.problem.toLowerCase().includes(filters.search.toLowerCase()) ||
+        p.id.toLowerCase().includes(filters.search.toLowerCase()) ||
+        p.lc.toLowerCase().includes(filters.search.toLowerCase());
+      
+      const matchesTopic = filters.topic === 'all' || p.topic === filters.topic;
+      const matchesPattern = filters.pattern === 'all' || p.pattern === filters.pattern;
+      
+      let matchesStatus = true;
+      if (filters.status === 'complete') {
+        matchesStatus = p.solved && p.resolved && p.explained;
+      } else if (filters.status === 'partial') {
+        matchesStatus = p.solved && !(p.resolved && p.explained);
+      } else if (filters.status === 'none') {
+        matchesStatus = !p.solved;
+      }
+
+      return matchesSearch && matchesTopic && matchesPattern && matchesStatus;
+    });
+  }, [problems, filters]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl gradient-primary glow-primary">
+                <Code2 className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-foreground tracking-tight">DSA Tracker</h1>
+                <p className="text-xs text-muted-foreground">FAANG Interview Prep</p>
+              </div>
+            </div>
+            <AddProblemDialog onAdd={addProblem} />
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatsCard
+            title="Solved"
+            value={stats.solved}
+            total={stats.total}
+            icon={CheckCircle2}
+            color="success"
+            delay={0}
+          />
+          <StatsCard
+            title="Re-solved"
+            value={stats.resolved}
+            total={stats.total}
+            icon={RotateCcw}
+            color="warning"
+            delay={100}
+          />
+          <StatsCard
+            title="Explained"
+            value={stats.explained}
+            total={stats.total}
+            icon={Lightbulb}
+            color="primary"
+            delay={200}
+          />
+          <StatsCard
+            title="Mastered"
+            value={stats.mastered}
+            total={stats.total}
+            icon={Target}
+            color="accent"
+            delay={300}
+          />
+        </div>
+
+        {/* Filters */}
+        <FilterBar filters={filters} onFiltersChange={setFilters} />
+
+        {/* Problems List */}
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
+          {/* Table Header */}
+          <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto] gap-4 items-center px-4 py-3 bg-secondary/30 border-b border-border text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <span className="w-10">ID</span>
+            <span>Problem</span>
+            <span>LC</span>
+            <span className="text-center">Solved</span>
+            <span className="text-center">Re-solve</span>
+            <span className="text-center">Explain</span>
+            <span className="w-8"></span>
+          </div>
+
+          {/* Problems */}
+          <ScrollArea className="h-[calc(100vh-380px)]">
+            <div className="divide-y divide-border/50">
+              {filteredProblems.length > 0 ? (
+                filteredProblems.map((problem, index) => (
+                  <ProblemRow
+                    key={problem.id}
+                    problem={problem}
+                    onUpdate={updateProblem}
+                    index={index}
+                  />
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                  <Target className="w-12 h-12 mb-4 opacity-30" />
+                  <p className="text-lg font-medium">No problems found</p>
+                  <p className="text-sm">Try adjusting your filters</p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+
+          {/* Footer */}
+          <div className="px-4 py-3 bg-secondary/30 border-t border-border">
+            <p className="text-xs text-muted-foreground">
+              Showing <span className="font-medium text-foreground">{filteredProblems.length}</span> of{' '}
+              <span className="font-medium text-foreground">{problems.length}</span> problems
+            </p>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
