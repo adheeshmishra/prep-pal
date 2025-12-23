@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Problem, topics, patterns } from '@/data/problems';
+import { Problem, topics, topicPatternMap } from '@/data/problems';
 import {
   Dialog,
   DialogContent,
@@ -30,9 +30,11 @@ export function AddProblemDialog({ onAdd }: AddProblemDialogProps) {
     problem: '',
     topic: '',
     pattern: '',
-    lc: '',
-    skill: '',
+    difficulty: 'Medium' as 'Easy' | 'Medium' | 'Hard',
+    week: 1,
   });
+
+  const relevantPatterns = formData.topic ? (topicPatternMap[formData.topic] || []) : [];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +52,7 @@ export function AddProblemDialog({ onAdd }: AddProblemDialogProps) {
       notes: '',
     });
 
-    setFormData({ problem: '', topic: '', pattern: '', lc: '', skill: '' });
+    setFormData({ problem: '', topic: '', pattern: '', difficulty: 'Medium', week: 1 });
     setOpen(false);
     toast.success('Problem added successfully!');
   };
@@ -84,7 +86,7 @@ export function AddProblemDialog({ onAdd }: AddProblemDialogProps) {
               <Label className="text-sm text-foreground">Topic *</Label>
               <Select
                 value={formData.topic}
-                onValueChange={(value) => setFormData({ ...formData, topic: value })}
+                onValueChange={(value) => setFormData({ ...formData, topic: value, pattern: '' })}
               >
                 <SelectTrigger className="bg-background border-border">
                   <SelectValue placeholder="Select topic" />
@@ -104,12 +106,13 @@ export function AddProblemDialog({ onAdd }: AddProblemDialogProps) {
               <Select
                 value={formData.pattern}
                 onValueChange={(value) => setFormData({ ...formData, pattern: value })}
+                disabled={!formData.topic}
               >
                 <SelectTrigger className="bg-background border-border">
                   <SelectValue placeholder="Select pattern" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border max-h-[200px]">
-                  {patterns.map((pattern) => (
+                  {relevantPatterns.map((pattern) => (
                     <SelectItem key={pattern} value={pattern}>
                       {pattern}
                     </SelectItem>
@@ -121,23 +124,30 @@ export function AddProblemDialog({ onAdd }: AddProblemDialogProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="lc" className="text-sm text-foreground">LeetCode #</Label>
-              <Input
-                id="lc"
-                value={formData.lc}
-                onChange={(e) => setFormData({ ...formData, lc: e.target.value })}
-                placeholder="e.g., LC 1"
-                className="bg-background border-border"
-              />
+              <Label className="text-sm text-foreground">Difficulty</Label>
+              <Select
+                value={formData.difficulty}
+                onValueChange={(value) => setFormData({ ...formData, difficulty: value as 'Easy' | 'Medium' | 'Hard' })}
+              >
+                <SelectTrigger className="bg-background border-border">
+                  <SelectValue placeholder="Select difficulty" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border">
+                  <SelectItem value="Easy">Easy</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Hard">Hard</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="skill" className="text-sm text-foreground">Skill/Why</Label>
+              <Label htmlFor="week" className="text-sm text-foreground">Week</Label>
               <Input
-                id="skill"
-                value={formData.skill}
-                onChange={(e) => setFormData({ ...formData, skill: e.target.value })}
-                placeholder="e.g., Hash map"
+                id="week"
+                type="number"
+                min={1}
+                value={formData.week}
+                onChange={(e) => setFormData({ ...formData, week: parseInt(e.target.value) || 1 })}
                 className="bg-background border-border"
               />
             </div>

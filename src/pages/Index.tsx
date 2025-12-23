@@ -23,6 +23,7 @@ const Index = () => {
     topic: 'all',
     pattern: 'all',
     status: 'all',
+    difficulty: 'all',
   });
 
   // Keyboard shortcuts
@@ -36,7 +37,7 @@ const Index = () => {
       }
       // Escape to clear filters
       if (e.key === 'Escape') {
-        setFilters({ search: '', topic: 'all', pattern: 'all', status: 'all' });
+        setFilters({ search: '', topic: 'all', pattern: 'all', status: 'all', difficulty: 'all' });
       }
     };
 
@@ -58,11 +59,11 @@ const Index = () => {
     return problems.filter(p => {
       const matchesSearch = !filters.search || 
         p.problem.toLowerCase().includes(filters.search.toLowerCase()) ||
-        p.id.toLowerCase().includes(filters.search.toLowerCase()) ||
-        p.lc.toLowerCase().includes(filters.search.toLowerCase());
+        p.id.toLowerCase().includes(filters.search.toLowerCase());
       
       const matchesTopic = filters.topic === 'all' || p.topic === filters.topic;
       const matchesPattern = filters.pattern === 'all' || p.pattern === filters.pattern;
+      const matchesDifficulty = filters.difficulty === 'all' || p.difficulty === filters.difficulty;
       
       let matchesStatus = true;
       if (filters.status === 'complete') {
@@ -73,7 +74,7 @@ const Index = () => {
         matchesStatus = !p.solved;
       }
 
-      return matchesSearch && matchesTopic && matchesPattern && matchesStatus;
+      return matchesSearch && matchesTopic && matchesPattern && matchesStatus && matchesDifficulty;
     });
   }, [problems, filters]);
 
@@ -163,7 +164,7 @@ const Index = () => {
           <div className="grid grid-cols-[50px_1fr_80px_50px_50px_50px_36px] gap-3 items-center px-4 py-3 bg-secondary/30 border-b border-border text-xs font-medium text-muted-foreground uppercase tracking-wider">
             <span>ID</span>
             <span>Problem</span>
-            <span className="text-center">LC</span>
+            <span className="text-center">Week</span>
             <span className="text-center">Solved</span>
             <span className="text-center">Re-solve</span>
             <span className="text-center">Explain</span>

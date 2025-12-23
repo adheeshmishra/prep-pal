@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { DifficultyBadge } from '@/components/DifficultyBadge';
+
 
 interface ProblemRowProps {
   problem: Problem;
@@ -19,23 +19,30 @@ interface ProblemRowProps {
 }
 
 const topicColors: Record<string, string> = {
-  Arrays: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  Strings: 'bg-sky-500/20 text-sky-400 border-sky-500/30',
-  Recursion: 'bg-violet-500/20 text-violet-400 border-violet-500/30',
+  'Arrays & Strings': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  'Stacks & Queues': 'bg-sky-500/20 text-sky-400 border-sky-500/30',
+  'Recursion & Backtracking': 'bg-violet-500/20 text-violet-400 border-violet-500/30',
   'Binary Search': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  Greedy: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+  'Greedy + Heaps': 'bg-rose-500/20 text-rose-400 border-rose-500/30',
   Trees: 'bg-lime-500/20 text-lime-400 border-lime-500/30',
+  Trie: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
+  'Union Find': 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
   Graphs: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
-  DP: 'bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30',
+  'Dynamic Programming': 'bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30',
   Design: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  Mathematical: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
+  'String Algorithms': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+};
+
+const difficultyColors: Record<string, string> = {
+  Easy: 'bg-success/20 text-success border-success/30',
+  Medium: 'bg-warning/20 text-warning border-warning/30',
+  Hard: 'bg-destructive/20 text-destructive border-destructive/30',
 };
 
 export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
   const [showNotes, setShowNotes] = useState(false);
-  const lcNumber = problem.lc.replace('LC ', '').replace('Classic', '');
-  const lcUrl = lcNumber && lcNumber !== 'Classic' 
-    ? `https://leetcode.com/problems/${problem.problem.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/`
-    : null;
+  const lcUrl = `https://leetcode.com/problems/${problem.problem.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/`;
 
   const completionStatus = 
     problem.solved && problem.resolved && problem.explained ? 'complete' :
@@ -52,22 +59,20 @@ export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
       style={{ animationDelay: `${index * 20}ms` }}
     >
       {/* ID */}
-      <span className="font-mono text-xs text-muted-foreground">{problem.id}</span>
+      <span className="font-mono text-xs text-muted-foreground">#{problem.id}</span>
       
       {/* Problem Name & Details */}
       <div className="flex flex-col gap-1.5 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-medium text-sm text-foreground truncate">{problem.problem}</span>
-          {lcUrl && (
-            <a
-              href={lcUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary flex-shrink-0"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-          )}
+          <a
+            href={lcUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary flex-shrink-0"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0", topicColors[problem.topic])}>
@@ -76,8 +81,9 @@ export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
           <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-secondary/50 text-muted-foreground border-border">
             {problem.pattern}
           </Badge>
-          <DifficultyBadge pattern={problem.pattern} skill={problem.skill} />
-          <span className="text-[10px] text-muted-foreground hidden sm:inline">{problem.skill}</span>
+          <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0", difficultyColors[problem.difficulty])}>
+            {problem.difficulty}
+          </Badge>
         </div>
 
         {/* Notes Input */}
@@ -91,9 +97,9 @@ export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
         )}
       </div>
 
-      {/* LeetCode Link */}
+      {/* Week */}
       <Badge variant="secondary" className="font-mono text-[10px] px-2 py-0.5 bg-muted/50 justify-center">
-        {problem.lc}
+        W{problem.week}
       </Badge>
 
       {/* Checkboxes - centered properly */}
