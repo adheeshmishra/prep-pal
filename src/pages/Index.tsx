@@ -156,7 +156,12 @@ const Index = () => {
         </div>
 
         {/* Filters */}
-        <FilterBar filters={filters} onFiltersChange={setFilters} />
+        <FilterBar 
+          filters={filters} 
+          onFiltersChange={setFilters} 
+          filteredCount={filteredProblems.length}
+          totalCount={problems.length}
+        />
 
         {/* Problems List */}
         <div className="bg-card rounded-xl border border-border overflow-hidden">

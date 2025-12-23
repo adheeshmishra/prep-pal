@@ -22,10 +22,13 @@ export interface Filters {
 interface FilterBarProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
+  filteredCount?: number;
+  totalCount?: number;
 }
 
-export function FilterBar({ filters, onFiltersChange }: FilterBarProps) {
+export function FilterBar({ filters, onFiltersChange, filteredCount, totalCount }: FilterBarProps) {
   const hasActiveFilters = filters.search || filters.topic !== 'all' || filters.pattern !== 'all' || filters.status !== 'all' || filters.difficulty !== 'all';
+  const showCount = filteredCount !== undefined && totalCount !== undefined;
 
   // Get relevant patterns based on selected topic
   const relevantPatterns = useMemo(() => {
@@ -53,9 +56,17 @@ export function FilterBar({ filters, onFiltersChange }: FilterBarProps) {
 
   return (
     <div className="flex flex-wrap items-center gap-3 p-4 bg-card rounded-xl border border-border animate-fade-in">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Filter className="w-4 h-4" />
-        <span className="text-sm font-medium">Filters</span>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Filter className="w-4 h-4" />
+          <span className="text-sm font-medium">Filters</span>
+        </div>
+        {showCount && (
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
+            <span className="text-sm font-semibold text-primary">{filteredCount}</span>
+            <span className="text-xs text-muted-foreground">/ {totalCount}</span>
+          </div>
+        )}
       </div>
 
       {/* Search */}
