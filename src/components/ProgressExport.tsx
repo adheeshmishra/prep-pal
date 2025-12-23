@@ -30,7 +30,8 @@ export function ProgressExport({ problems, onReset }: ProgressExportProps) {
         problem: p.problem,
         topic: p.topic,
         pattern: p.pattern,
-        lc: p.lc,
+        week: p.week,
+        difficulty: p.difficulty,
         solved: p.solved,
         resolved: p.resolved,
         explained: p.explained,
@@ -49,13 +50,14 @@ export function ProgressExport({ problems, onReset }: ProgressExportProps) {
   };
 
   const exportAsCSV = () => {
-    const headers = ['ID', 'Problem', 'Topic', 'Pattern', 'LC', 'Solved', 'Re-solved', 'Explained', 'Notes'];
+    const headers = ['ID', 'Problem', 'Topic', 'Pattern', 'Week', 'Difficulty', 'Solved', 'Re-solved', 'Explained', 'Notes'];
     const rows = problems.map(p => [
       p.id,
       `"${p.problem}"`,
       p.topic,
       p.pattern,
-      p.lc,
+      p.week,
+      p.difficulty,
       p.solved ? 'Yes' : 'No',
       p.resolved ? 'Yes' : 'No',
       p.explained ? 'Yes' : 'No',

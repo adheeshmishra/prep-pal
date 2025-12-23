@@ -1,4 +1,4 @@
-import { topics, patterns } from '@/data/problems';
+import { topics, patterns, topicPatternMap } from '@/data/problems';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -9,13 +9,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Search, X, Filter } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useMemo } from 'react';
 
 export interface Filters {
   search: string;
   topic: string;
   pattern: string;
   status: string;
+  difficulty: string;
 }
 
 interface FilterBarProps {
@@ -24,10 +25,30 @@ interface FilterBarProps {
 }
 
 export function FilterBar({ filters, onFiltersChange }: FilterBarProps) {
-  const hasActiveFilters = filters.search || filters.topic !== 'all' || filters.pattern !== 'all' || filters.status !== 'all';
+  const hasActiveFilters = filters.search || filters.topic !== 'all' || filters.pattern !== 'all' || filters.status !== 'all' || filters.difficulty !== 'all';
+
+  // Get relevant patterns based on selected topic
+  const relevantPatterns = useMemo(() => {
+    if (filters.topic === 'all') {
+      return patterns;
+    }
+    return topicPatternMap[filters.topic] || [];
+  }, [filters.topic]);
 
   const clearFilters = () => {
-    onFiltersChange({ search: '', topic: 'all', pattern: 'all', status: 'all' });
+    onFiltersChange({ search: '', topic: 'all', pattern: 'all', status: 'all', difficulty: 'all' });
+  };
+
+  const handleTopicChange = (value: string) => {
+    // Reset pattern when topic changes if current pattern is not in new topic
+    const newPatterns = value === 'all' ? patterns : (topicPatternMap[value] || []);
+    const shouldResetPattern = filters.pattern !== 'all' && !newPatterns.includes(filters.pattern);
+    
+    onFiltersChange({ 
+      ...filters, 
+      topic: value,
+      pattern: shouldResetPattern ? 'all' : filters.pattern 
+    });
   };
 
   return (
@@ -51,9 +72,9 @@ export function FilterBar({ filters, onFiltersChange }: FilterBarProps) {
       {/* Topic Filter */}
       <Select
         value={filters.topic}
-        onValueChange={(value) => onFiltersChange({ ...filters, topic: value })}
+        onValueChange={handleTopicChange}
       >
-        <SelectTrigger className="w-[150px] bg-background/50 border-border/50">
+        <SelectTrigger className="w-[180px] bg-background/50 border-border/50">
           <SelectValue placeholder="Topic" />
         </SelectTrigger>
         <SelectContent className="bg-popover border-border">
@@ -71,16 +92,32 @@ export function FilterBar({ filters, onFiltersChange }: FilterBarProps) {
         value={filters.pattern}
         onValueChange={(value) => onFiltersChange({ ...filters, pattern: value })}
       >
-        <SelectTrigger className="w-[150px] bg-background/50 border-border/50">
+        <SelectTrigger className="w-[180px] bg-background/50 border-border/50">
           <SelectValue placeholder="Pattern" />
         </SelectTrigger>
         <SelectContent className="bg-popover border-border max-h-[300px]">
           <SelectItem value="all">All Patterns</SelectItem>
-          {patterns.map((pattern) => (
+          {relevantPatterns.map((pattern) => (
             <SelectItem key={pattern} value={pattern}>
               {pattern}
             </SelectItem>
           ))}
+        </SelectContent>
+      </Select>
+
+      {/* Difficulty Filter */}
+      <Select
+        value={filters.difficulty}
+        onValueChange={(value) => onFiltersChange({ ...filters, difficulty: value })}
+      >
+        <SelectTrigger className="w-[130px] bg-background/50 border-border/50">
+          <SelectValue placeholder="Difficulty" />
+        </SelectTrigger>
+        <SelectContent className="bg-popover border-border">
+          <SelectItem value="all">All Levels</SelectItem>
+          <SelectItem value="Easy">Easy</SelectItem>
+          <SelectItem value="Medium">Medium</SelectItem>
+          <SelectItem value="Hard">Hard</SelectItem>
         </SelectContent>
       </Select>
 
@@ -89,7 +126,7 @@ export function FilterBar({ filters, onFiltersChange }: FilterBarProps) {
         value={filters.status}
         onValueChange={(value) => onFiltersChange({ ...filters, status: value })}
       >
-        <SelectTrigger className="w-[150px] bg-background/50 border-border/50">
+        <SelectTrigger className="w-[140px] bg-background/50 border-border/50">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent className="bg-popover border-border">
