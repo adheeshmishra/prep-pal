@@ -7,9 +7,9 @@ import { AddProblemDialog } from '@/components/AddProblemDialog';
 import { ExecutionOrderDialog } from '@/components/ExecutionOrderDialog';
 import { WeekIndicator } from '@/components/WeekIndicator';
 import { ProgressExport } from '@/components/ProgressExport';
+import { UniversalNotesDialog } from '@/components/UniversalNotesDialog';
 import { CheckCircle2, RotateCcw, Lightbulb, Target, Code2, Keyboard } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { toast } from 'sonner';
 import {
   Tooltip,
   TooltipContent,
@@ -107,6 +107,7 @@ const Index = () => {
                   <p>Keyboard shortcuts</p>
                 </TooltipContent>
               </Tooltip>
+              <UniversalNotesDialog />
               <ExecutionOrderDialog problems={problems} />
               <ProgressExport problems={problems} onReset={resetProgress} />
               <AddProblemDialog onAdd={addProblem} />
