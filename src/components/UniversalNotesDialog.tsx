@@ -1,40 +1,44 @@
 import { useState, useEffect } from 'react';
-import { Problem } from '@/data/problems';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Code, FileText, Save, X, Copy, Check } from 'lucide-react';
+import { Code, FileText, Save, X, Copy, Check, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-interface NotesDialogProps {
-  problem: Problem;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSave: (notes: string) => void;
-}
+const UNIVERSAL_NOTES_KEY = 'dsa-tracker-universal-notes';
 
-export function NotesDialog({ problem, open, onOpenChange, onSave }: NotesDialogProps) {
-  const [notes, setNotes] = useState(problem.notes || '');
+export function UniversalNotesDialog() {
+  const [open, setOpen] = useState(false);
+  const [notes, setNotes] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (open) {
-      setNotes(problem.notes || '');
+    const stored = localStorage.getItem(UNIVERSAL_NOTES_KEY);
+    if (stored) {
+      setNotes(stored);
     }
-  }, [open, problem.notes]);
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      const stored = localStorage.getItem(UNIVERSAL_NOTES_KEY);
+      setNotes(stored || '');
+    }
+  }, [open]);
 
   const handleSave = () => {
-    onSave(notes);
-    toast.success('Notes saved');
-    onOpenChange(false);
+    localStorage.setItem(UNIVERSAL_NOTES_KEY, notes);
+    toast.success('Universal notes saved');
+    setOpen(false);
   };
 
   const insertCodeBlock = () => {
@@ -49,7 +53,6 @@ export function NotesDialog({ problem, open, onOpenChange, onSave }: NotesDialog
     toast.success('Notes copied to clipboard');
   };
 
-  // Simple markdown-like rendering for preview
   const renderPreview = (text: string) => {
     if (!text.trim()) {
       return <p className="text-muted-foreground italic">No notes yet. Start writing!</p>;
@@ -87,7 +90,6 @@ export function NotesDialog({ problem, open, onOpenChange, onSave }: NotesDialog
         );
       }
       
-      // Regular text - preserve line breaks
       return (
         <div key={index} className="whitespace-pre-wrap text-sm text-foreground leading-relaxed">
           {part}
@@ -97,13 +99,22 @@ export function NotesDialog({ problem, open, onOpenChange, onSave }: NotesDialog
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="gap-2">
+          <BookOpen className="w-4 h-4" />
+          Universal Notes
+        </Button>
+      </DialogTrigger>
       <DialogContent className="max-w-2xl h-[80vh] flex flex-col p-0 gap-0">
         <DialogHeader className="px-6 py-4 border-b border-border">
           <DialogTitle className="flex items-center gap-2 text-lg">
-            <FileText className="w-5 h-5 text-primary" />
-            Notes for: {problem.problem}
+            <BookOpen className="w-5 h-5 text-primary" />
+            Universal Notes
           </DialogTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            General notes, patterns, templates, and references for all problems
+          </p>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'edit' | 'preview')} className="flex-1 flex flex-col overflow-hidden">
@@ -145,31 +156,35 @@ export function NotesDialog({ problem, open, onOpenChange, onSave }: NotesDialog
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Write your notes here...
+              placeholder="Write your universal notes here...
 
-Tips:
-• Use ```java to start a code block
-• End code blocks with ```
-• Your notes are saved per problem
+Use this space for:
+• Common patterns and templates
+• Algorithm cheat sheets
+• Time/Space complexity references
+• Reusable code snippets
 
 Example:
 ```java
-public int[] twoSum(int[] nums, int target) {
-    Map<Integer, Integer> seen = new HashMap<>();
-    for (int i = 0; i < nums.length; i++) {
-        int diff = target - nums[i];
-        if (seen.containsKey(diff)) {
-            return new int[]{seen.get(diff), i};
-        }
-        seen.put(nums[i], i);
+// Binary Search Template
+public int binarySearch(int[] arr, int target) {
+    int left = 0, right = arr.length - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (arr[mid] == target) return mid;
+        if (arr[mid] < target) left = mid + 1;
+        else right = mid - 1;
     }
-    return new int[]{};
+    return -1;
 }
 ```
 
-Approach:
-- Use a hashmap to store seen values
-- Time: O(n), Space: O(n)"
+Common Patterns:
+- Two Pointers
+- Sliding Window
+- Binary Search
+- DFS/BFS
+- Dynamic Programming"
               className={cn(
                 "h-full w-full resize-none rounded-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0",
                 "font-mono text-sm leading-relaxed p-4",
@@ -188,7 +203,7 @@ Approach:
             {notes.length} characters • Supports code blocks with ```language
           </p>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="gap-1.5">
+            <Button variant="outline" onClick={() => setOpen(false)} className="gap-1.5">
               <X className="w-4 h-4" />
               Cancel
             </Button>
