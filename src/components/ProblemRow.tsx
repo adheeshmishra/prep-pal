@@ -1,7 +1,7 @@
 import { Problem } from '@/data/problems';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, MessageSquare } from 'lucide-react';
+import { ExternalLink, MessageSquare, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   Tooltip,
@@ -9,8 +9,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useState } from 'react';
-import { Input } from '@/components/ui/input';
-
+import { NotesDialog } from './NotesDialog';
 
 interface ProblemRowProps {
   problem: Problem;
@@ -41,8 +40,9 @@ const difficultyColors: Record<string, string> = {
 };
 
 export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
-  const [showNotes, setShowNotes] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
   const lcUrl = `https://leetcode.com/problems/${problem.problem.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/`;
+  const hasNotes = problem.notes && problem.notes.trim().length > 0;
 
   const completionStatus = 
     problem.solved && problem.resolved && problem.explained ? 'complete' :
@@ -84,17 +84,13 @@ export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
           <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0", difficultyColors[problem.difficulty])}>
             {problem.difficulty}
           </Badge>
+          {hasNotes && (
+            <span className="text-[10px] text-primary flex items-center gap-0.5">
+              <FileText className="w-3 h-3" />
+              notes
+            </span>
+          )}
         </div>
-
-        {/* Notes Input */}
-        {showNotes && (
-          <Input
-            value={problem.notes}
-            onChange={(e) => onUpdate(problem.id, { notes: e.target.value })}
-            placeholder="Add notes..."
-            className="mt-1 h-7 text-xs bg-background/50"
-          />
-        )}
       </div>
 
       {/* Week */}
@@ -157,15 +153,29 @@ export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
         </TooltipContent>
       </Tooltip>
 
-      <button
-        onClick={() => setShowNotes(!showNotes)}
-        className={cn(
-          "p-1.5 rounded-md transition-colors flex items-center justify-center",
-          showNotes ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-        )}
-      >
-        <MessageSquare className="w-3.5 h-3.5" />
-      </button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() => setNotesOpen(true)}
+            className={cn(
+              "p-1.5 rounded-md transition-colors flex items-center justify-center",
+              hasNotes ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+            )}
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="bg-popover text-popover-foreground">
+          <p>{hasNotes ? 'View/Edit Notes' : 'Add Notes'}</p>
+        </TooltipContent>
+      </Tooltip>
+
+      <NotesDialog
+        problem={problem}
+        open={notesOpen}
+        onOpenChange={setNotesOpen}
+        onSave={(notes) => onUpdate(problem.id, { notes })}
+      />
     </div>
   );
 }
