@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Code, FileText, Save, X, Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { NotesPreview } from './SyntaxHighlighter';
 
 interface NotesDialogProps {
   problem: Problem;
@@ -49,52 +50,6 @@ export function NotesDialog({ problem, open, onOpenChange, onSave }: NotesDialog
     toast.success('Notes copied to clipboard');
   };
 
-  // Simple markdown-like rendering for preview
-  const renderPreview = (text: string) => {
-    if (!text.trim()) {
-      return <p className="text-muted-foreground italic">No notes yet. Start writing!</p>;
-    }
-
-    const parts = text.split(/(```[\s\S]*?```)/g);
-    
-    return parts.map((part, index) => {
-      if (part.startsWith('```') && part.endsWith('```')) {
-        const lines = part.slice(3, -3).split('\n');
-        const language = lines[0].trim() || 'code';
-        const code = lines.slice(1).join('\n');
-        
-        return (
-          <div key={index} className="my-3 rounded-lg overflow-hidden border border-border">
-            <div className="bg-muted/80 px-3 py-1.5 text-xs font-mono text-muted-foreground flex items-center justify-between">
-              <span>{language}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 px-2 text-xs"
-                onClick={async () => {
-                  await navigator.clipboard.writeText(code);
-                  toast.success('Code copied');
-                }}
-              >
-                <Copy className="w-3 h-3 mr-1" />
-                Copy
-              </Button>
-            </div>
-            <pre className="bg-background/50 p-3 overflow-x-auto">
-              <code className="text-sm font-mono text-foreground whitespace-pre">{code}</code>
-            </pre>
-          </div>
-        );
-      }
-      
-      // Regular text - preserve line breaks
-      return (
-        <div key={index} className="whitespace-pre-wrap text-sm text-foreground leading-relaxed">
-          {part}
-        </div>
-      );
-    });
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -179,7 +134,7 @@ Approach:
           </TabsContent>
 
           <TabsContent value="preview" className="flex-1 m-0 overflow-auto p-4 bg-background">
-            {renderPreview(notes)}
+            <NotesPreview text={notes} />
           </TabsContent>
         </Tabs>
 

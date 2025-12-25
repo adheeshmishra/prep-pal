@@ -38,16 +38,17 @@ export function ExecutionOrderDialog({ problems }: ExecutionOrderDialogProps) {
     if (!match) return [];
     const start = parseInt(match[1]);
     const end = parseInt(match[2]);
-    return Array.from({ length: end - start + 1 }, (_, i) => `P${start + i}`);
+    return Array.from({ length: end - start + 1 }, (_, i) => String(start + i));
   };
 
   const getWeekProgress = (week: typeof executionOrder[0]) => {
     const range = parseRange(week.problemIds);
-    if (range.length === 0) return { solved: 0, total: 0, percent: 0 };
+    if (range.length === 0) return { solved: 0, total: week.problemCount, percent: 0 };
     
     const weekProblems = problems.filter(p => range.includes(p.id));
     const solved = weekProblems.filter(p => p.solved).length;
-    return { solved, total: weekProblems.length, percent: Math.round((solved / weekProblems.length) * 100) };
+    const total = weekProblems.length || week.problemCount;
+    return { solved, total, percent: total > 0 ? Math.round((solved / total) * 100) : 0 };
   };
 
   const currentWeek = getCurrentWeek();
@@ -130,7 +131,7 @@ export function ExecutionOrderDialog({ problems }: ExecutionOrderDialogProps) {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-4 gap-4 text-xs">
+                  <div className="grid grid-cols-5 gap-3 text-xs">
                     <div>
                       <span className="text-muted-foreground">Patterns:</span>
                       <p className="text-foreground mt-0.5">{week.patterns}</p>
@@ -138,6 +139,11 @@ export function ExecutionOrderDialog({ problems }: ExecutionOrderDialogProps) {
                     <div>
                       <span className="text-muted-foreground">Problems:</span>
                       <p className="text-foreground mt-0.5 font-mono">{week.problemIds}</p>
+                      <p className="text-muted-foreground/70 mt-0.5">{week.problemCount} problems</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Time:</span>
+                      <p className="text-foreground mt-0.5 font-mono">{week.hoursEstimate}</p>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Re-solve:</span>
