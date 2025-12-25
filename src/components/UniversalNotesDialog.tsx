@@ -11,9 +11,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Code, FileText, Save, X, Copy, Check, BookOpen, Plus, Trash2, Search, Edit2 } from 'lucide-react';
+import { Code, FileText, Copy, Check, BookOpen, Plus, Trash2, Search, Edit2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { NotesPreview } from './SyntaxHighlighter';
 
 const UNIVERSAL_NOTES_KEY = 'dsa-tracker-universal-notes-v2';
 
@@ -145,50 +146,6 @@ export function UniversalNotesDialog() {
     toast.success('Notes copied to clipboard');
   };
 
-  const renderPreview = (text: string) => {
-    if (!text.trim()) {
-      return <p className="text-muted-foreground italic">No notes yet. Start writing!</p>;
-    }
-
-    const parts = text.split(/(```[\s\S]*?```)/g);
-    
-    return parts.map((part, index) => {
-      if (part.startsWith('```') && part.endsWith('```')) {
-        const lines = part.slice(3, -3).split('\n');
-        const language = lines[0].trim() || 'code';
-        const code = lines.slice(1).join('\n');
-        
-        return (
-          <div key={index} className="my-3 rounded-lg overflow-hidden border border-border">
-            <div className="bg-muted/80 px-3 py-1.5 text-xs font-mono text-muted-foreground flex items-center justify-between">
-              <span>{language}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 px-2 text-xs"
-                onClick={async () => {
-                  await navigator.clipboard.writeText(code);
-                  toast.success('Code copied');
-                }}
-              >
-                <Copy className="w-3 h-3 mr-1" />
-                Copy
-              </Button>
-            </div>
-            <pre className="bg-background/50 p-3 overflow-x-auto">
-              <code className="text-sm font-mono text-foreground whitespace-pre">{code}</code>
-            </pre>
-          </div>
-        );
-      }
-      
-      return (
-        <div key={index} className="whitespace-pre-wrap text-sm text-foreground leading-relaxed">
-          {part}
-        </div>
-      );
-    });
-  };
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString('en-US', {
@@ -389,7 +346,7 @@ public int binarySearch(int[] arr, int target) {
                 </TabsContent>
 
                 <TabsContent value="preview" className="flex-1 m-0 overflow-auto p-4 bg-background">
-                  {renderPreview(activeNote.content)}
+                  <NotesPreview text={activeNote.content} />
                 </TabsContent>
               </Tabs>
             ) : (
