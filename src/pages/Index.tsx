@@ -8,7 +8,8 @@ import { ExecutionOrderDialog } from '@/components/ExecutionOrderDialog';
 import { WeekIndicator } from '@/components/WeekIndicator';
 import { ProgressExport } from '@/components/ProgressExport';
 import { UniversalNotesDialog } from '@/components/UniversalNotesDialog';
-import { CheckCircle2, RotateCcw, Lightbulb, Target, Code2, Keyboard } from 'lucide-react';
+import { CalendarView } from '@/components/CalendarView';
+import { CheckCircle2, RotateCcw, Lightbulb, Target, Code2, Keyboard, Clock } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Tooltip,
@@ -17,7 +18,7 @@ import {
 } from '@/components/ui/tooltip';
 
 const Index = () => {
-  const { problems, updateProblem, addProblem, resetProgress } = useProblems();
+  const { problems, updateProblem, addProblem, resetProgress, updateTime } = useProblems();
   const [filters, setFilters] = useState<Filters>({
     search: '',
     topic: 'all',
@@ -51,7 +52,8 @@ const Index = () => {
     const resolved = problems.filter(p => p.resolved).length;
     const explained = problems.filter(p => p.explained).length;
     const mastered = problems.filter(p => p.solved && p.resolved && p.explained).length;
-    return { solved, resolved, explained, mastered, total: problems.length };
+    const totalTime = problems.reduce((sum, p) => sum + (p.totalTime || 0), 0);
+    return { solved, resolved, explained, mastered, total: problems.length, totalTime };
   }, [problems]);
 
   // Filter problems
@@ -82,21 +84,21 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl gradient-primary glow-primary">
-                <Code2 className="w-6 h-6 text-primary-foreground" />
+        <div className="container mx-auto px-2 md:px-4 py-3 md:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl gradient-primary glow-primary">
+                <Code2 className="w-5 h-5 md:w-6 md:h-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground tracking-tight">DSA Tracker</h1>
-                <p className="text-xs text-muted-foreground">FAANG Interview Prep</p>
+                <h1 className="text-lg md:text-xl font-bold text-foreground tracking-tight">DSA Tracker</h1>
+                <p className="text-[10px] md:text-xs text-muted-foreground hidden sm:block">FAANG Interview Prep</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2 flex-wrap justify-end">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded bg-secondary/50 text-[10px] text-muted-foreground">
+                  <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded bg-secondary/50 text-[10px] text-muted-foreground">
                     <Keyboard className="w-3 h-3" />
                     <span>⌘K search</span>
                     <span className="mx-1">•</span>
@@ -107,6 +109,14 @@ const Index = () => {
                   <p>Keyboard shortcuts</p>
                 </TooltipContent>
               </Tooltip>
+              {/* Total time badge */}
+              {stats.totalTime > 0 && (
+                <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded bg-primary/10 text-xs text-primary">
+                  <Clock className="w-3 h-3" />
+                  <span>{Math.floor(stats.totalTime / 60)}h {stats.totalTime % 60}m</span>
+                </div>
+              )}
+              <CalendarView problems={problems} />
               <UniversalNotesDialog />
               <ExecutionOrderDialog problems={problems} />
               <ProgressExport problems={problems} onReset={resetProgress} />
@@ -167,7 +177,7 @@ const Index = () => {
         {/* Problems List */}
         <div className="bg-card rounded-xl border border-border overflow-hidden">
           {/* Table Header - aligned with row grid */}
-          <div className="grid grid-cols-[50px_1fr_80px_50px_50px_50px_36px] gap-3 items-center px-4 py-3 bg-secondary/30 border-b border-border text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="hidden md:grid grid-cols-[50px_1fr_80px_50px_50px_50px_36px_100px] gap-3 items-center px-4 py-3 bg-secondary/30 border-b border-border text-xs font-medium text-muted-foreground uppercase tracking-wider">
             <span>ID</span>
             <span>Problem</span>
             <span className="text-center">Week</span>
@@ -175,6 +185,18 @@ const Index = () => {
             <span className="text-center">Re-solve</span>
             <span className="text-center">Explain</span>
             <span></span>
+            <span className="text-center">Time</span>
+          </div>
+          {/* Mobile Header */}
+          <div className="md:hidden grid grid-cols-[40px_1fr_60px_36px_36px_36px_36px_80px] gap-2 items-center px-2 py-2 bg-secondary/30 border-b border-border text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+            <span>ID</span>
+            <span>Problem</span>
+            <span className="text-center">Wk</span>
+            <span className="text-center">✓</span>
+            <span className="text-center">↻</span>
+            <span className="text-center">💡</span>
+            <span></span>
+            <span className="text-center">Time</span>
           </div>
 
           {/* Problems */}
@@ -186,6 +208,7 @@ const Index = () => {
                     key={problem.id}
                     problem={problem}
                     onUpdate={updateProblem}
+                    onTimeUpdate={updateTime}
                     index={index}
                   />
                 ))

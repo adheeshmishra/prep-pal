@@ -232,14 +232,14 @@ export function UniversalNotesDialog() {
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
-                        <div className="flex items-start justify-between gap-1">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{note.title}</p>
+                        <div className="flex items-start justify-between gap-1 overflow-hidden">
+                          <div className="flex-1 min-w-0 overflow-hidden">
+                            <p className="text-sm font-medium truncate max-w-[140px]" title={note.title}>{note.title}</p>
                             <p className="text-xs text-muted-foreground truncate mt-0.5">
                               {formatDate(note.updatedAt)}
                             </p>
                           </div>
-                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                             <Button
                               variant="ghost"
                               size="sm"
