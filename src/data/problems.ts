@@ -1,3 +1,5 @@
+import { TimeEntry } from '@/types/problem';
+
 export interface Problem {
   id: string;
   week: number;
@@ -9,6 +11,9 @@ export interface Problem {
   resolved: boolean;
   explained: boolean;
   notes: string;
+  timeEntries?: TimeEntry[];
+  totalTime?: number;
+  scheduledDate?: string;
 }
 
 export const initialProblems: Problem[] = [

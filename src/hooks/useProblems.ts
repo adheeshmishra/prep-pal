@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Problem, initialProblems } from '@/data/problems';
 import { toast } from 'sonner';
+import { TimeEntry } from '@/types/problem';
 
 const STORAGE_KEY = 'dsa-tracker-problems';
 const VERSION_KEY = 'dsa-tracker-version';
@@ -78,5 +79,26 @@ export function useProblems() {
     localStorage.setItem(VERSION_KEY, String(CURRENT_VERSION));
   };
 
-  return { problems, updateProblem, addProblem, resetProgress };
+  const updateTime = (problemId: string, duration: number) => {
+    setProblems(prev =>
+      prev.map(p => {
+        if (p.id === problemId) {
+          const newEntry: TimeEntry = {
+            id: crypto.randomUUID(),
+            startTime: new Date().toISOString(),
+            endTime: new Date().toISOString(),
+            duration,
+            date: new Date().toISOString().split('T')[0],
+          };
+          const timeEntries = [...(p.timeEntries || []), newEntry];
+          const totalTime = timeEntries.reduce((sum, e) => sum + e.duration, 0);
+          return { ...p, timeEntries, totalTime };
+        }
+        return p;
+      })
+    );
+    toast.success(`Added ${duration} minutes to time log`);
+  };
+
+  return { problems, updateProblem, addProblem, resetProgress, updateTime };
 }

@@ -10,10 +10,12 @@ import {
 } from '@/components/ui/tooltip';
 import { useState } from 'react';
 import { NotesDialog } from './NotesDialog';
+import { TimeTracker } from './TimeTracker';
 
 interface ProblemRowProps {
   problem: Problem;
   onUpdate: (id: string, updates: Partial<Problem>) => void;
+  onTimeUpdate: (problemId: string, duration: number) => void;
   index: number;
 }
 
@@ -39,7 +41,7 @@ const difficultyColors: Record<string, string> = {
   Hard: 'bg-destructive/20 text-destructive border-destructive/30',
 };
 
-export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
+export function ProblemRow({ problem, onUpdate, onTimeUpdate, index }: ProblemRowProps) {
   const [notesOpen, setNotesOpen] = useState(false);
   const lcUrl = `https://leetcode.com/problems/${problem.problem.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/`;
   const hasNotes = problem.notes && problem.notes.trim().length > 0;
@@ -51,7 +53,7 @@ export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
   return (
     <div 
       className={cn(
-        "group grid grid-cols-[50px_1fr_80px_50px_50px_50px_36px] gap-3 items-center px-4 py-3 rounded-lg transition-all duration-200",
+        "group grid grid-cols-[40px_1fr_60px_36px_36px_36px_36px_80px] md:grid-cols-[50px_1fr_80px_50px_50px_50px_36px_100px] gap-2 md:gap-3 items-center px-2 md:px-4 py-2 md:py-3 rounded-lg transition-all duration-200",
         "hover:bg-secondary/50 border border-transparent",
         completionStatus === 'complete' && "bg-success/5 border-success/20",
         completionStatus === 'partial' && "bg-warning/5 border-warning/20",
@@ -169,6 +171,13 @@ export function ProblemRow({ problem, onUpdate, index }: ProblemRowProps) {
           <p>{hasNotes ? 'View/Edit Notes' : 'Add Notes'}</p>
         </TooltipContent>
       </Tooltip>
+
+      {/* Time Tracker */}
+      <TimeTracker
+        problemId={problem.id}
+        totalTime={problem.totalTime || 0}
+        onTimeUpdate={onTimeUpdate}
+      />
 
       <NotesDialog
         problem={problem}
